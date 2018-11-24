@@ -1,3 +1,15 @@
-import * as wasm from "rust-wasm-game-of-life";
+import { Universe } from "rust-wasm-game-of-life";
 
-wasm.greet("world");
+const pre = document.getElementById("game-of-life-canvas");
+const universe = Universe.new();
+
+const renderLoop = () => {
+  const textContent = universe.render();
+
+  pre.textContent = textContent;
+  universe.tick();
+
+  requestAnimationFrame(renderLoop);
+}
+
+requestAnimationFrame(renderLoop);
