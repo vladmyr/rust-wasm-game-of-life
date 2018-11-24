@@ -1,11 +1,13 @@
 extern crate cfg_if;
 extern crate wasm_bindgen;
+extern crate js_sys;
 
 mod utils;
 
 use cfg_if::cfg_if;
 use wasm_bindgen::prelude::*;
 use std::fmt;
+use js_sys::Math;
 
 cfg_if! {
     // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -23,6 +25,15 @@ cfg_if! {
 pub enum Cell {
     Dead = 0,
     Alive = 1
+}
+
+#[wasm_bindgen]
+#[repr(u8)]
+pub enum UniversePreset {
+    Demo = 0,
+    Random = 1,
+    Glider = 2,
+    SpaceShip = 3,
 }
 
 #[wasm_bindgen]
@@ -96,19 +107,53 @@ impl Universe {
         self.cells = next;
     }
 
-    pub fn new() -> Universe {
+    pub fn new(preset: UniversePreset) -> Universe {
         let width = 64;
         let height = 64;
 
-        let cells = (0..width * height)
-            .map(|i| {
-                if i % 2 == 0 || i % 7 == 0 {
-                    Cell::Alive
-                } else {
-                    Cell::Dead
+        let cells = (0..width * height).map(|i| {
+            match preset {
+                UniversePreset::Demo => {
+                    if i % 2 == 0 || i % 7 == 0 {
+                        Cell::Alive
+                    } else {
+                        Cell::Dead
+                    }
+                },
+                UniversePreset::Random => {
+                    if Math::random() < 0.5 {
+                        Cell::Alive
+                    } else {
+                        Cell::Dead
+                    }
+                },
+                UniversePreset::Glider => {
+                    let row: u32 = i / width;
+                    let col: u32 = i % height;
+
+                    match (row, col) {
+                        (0, 1) => Cell::Alive,
+                        (1, 2) => Cell::Alive,
+                        (2, y) if y < 3 => Cell::Alive,
+                        (_x, _y) => Cell::Dead,
+                    }
+                },
+                UniversePreset::SpaceShip => {
+                    let row: u32 = i / width;
+                    let col: u32 = i % height;
+
+                    match (row, col) {
+                        (0, 0) | (0, 3) => Cell::Alive,
+                        (1, 4) => Cell::Alive,
+                        (2, 0) | (2, 4) => Cell::Alive,
+                        (3, y) if y > 0 && y < 5 => Cell::Alive,
+                        (_x, _y) => Cell::Dead,
+                    }
                 }
-            })
-            .collect();
+            }
+            
+        })
+        .collect();
 
         Universe {
             width,

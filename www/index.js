@@ -1,4 +1,4 @@
-import { Universe, Cell } from "rust-wasm-game-of-life";
+import { Universe, Cell, UniversePreset } from "rust-wasm-game-of-life";
 import { memory } from "rust-wasm-game-of-life/rust_wasm_game_of_life_bg";
 
 const CELL_SIZE = 12;
@@ -6,7 +6,7 @@ const GRID_COLOR = "#cccccc";
 const DEAD_COLOR = "#ffffff";
 const ALIVE_COLOR = "#000000";
 
-const universe = Universe.new();
+const universe = Universe.new(UniversePreset.Random);
 const width = universe.width();
 const height = universe.height();
 
