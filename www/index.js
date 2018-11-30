@@ -10,11 +10,56 @@ const universe = Universe.new(UniversePreset.SpaceShip);
 const width = universe.width();
 const height = universe.height();
 
+let animationId = undefined;
+let fps = 2;
+
 const canvas = document.getElementById("game-of-life-canvas");
 canvas.height = (CELL_SIZE + 1) * height + 1;
 canvas.width = (CELL_SIZE + 1) * width + 1;
 
+canvas.addEventListener("click", event => {
+  const boundingRect = canvas.getBoundingClientRect();
+
+  const scaleX = canvas.width / boundingRect.width;
+  const scaleY = canvas.height / boundingRect.height;
+
+  const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
+  const canvasTop = (event.clientY - boundingRect.top) * scaleY;
+
+  const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), height - 1);
+  const column = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), width - 1);
+
+  universe.toggle_cell(row, column);
+
+  drawGrid();
+  drawCells();
+})
+
 const ctx = canvas.getContext("2d");
+
+const isPaused = () => {
+  return animationId === undefined;
+}
+
+const play = () => {
+  playPauseButton.textContent = "⏸";
+  animationId = requestAnimationFrame(frameRate(renderLoop, fps));
+}
+
+const pause = () => {
+  playPauseButton.textContent = "▶";
+  cancelAnimationFrame(animationId);
+  animationId = undefined;
+}
+
+const playPauseButton = document.getElementById("play-pause");
+playPauseButton.addEventListener("click", event => {
+  if (isPaused()) {
+    play();
+  } else {
+    pause();
+  }
+});
 
 const renderLoop = () => {
   universe.tick();
@@ -79,8 +124,8 @@ const frameRate = (cb, fps, timestampMark = 0) => {
       newTimestampMark = timestamp + timestampDelta;
     }
 
-    requestAnimationFrame(frameRate(cb, fps, newTimestampMark));
+    animationId = requestAnimationFrame(frameRate(cb, fps, newTimestampMark));
   }
 }
 
-requestAnimationFrame(frameRate(renderLoop, 2));
+play();
