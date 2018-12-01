@@ -6,7 +6,7 @@ const GRID_COLOR = "#cccccc";
 const DEAD_COLOR = "#ffffff";
 const ALIVE_COLOR = "#000000";
 
-const universe = Universe.new(UniversePreset.SpaceShip);
+const universe = Universe.new(UniversePreset.Demo);
 const width = universe.width();
 const height = universe.height();
 
@@ -61,13 +61,6 @@ playPauseButton.addEventListener("click", event => {
   }
 });
 
-const renderLoop = () => {
-  universe.tick();
-  
-  drawGrid();
-  drawCells();
-}
-
 const drawGrid = () => {
   ctx.beginPath();
   ctx.strokeStyle = GRID_COLOR;
@@ -113,6 +106,46 @@ const drawCells = () => {
   ctx.stroke();
 }
 
+const fpsMonitor = new class {
+  constructor() {
+    this.fps = document.getElementById("fps");
+    this.frames = [];
+    this.latestFrameTimeStamp = performance.now();
+  }
+
+  render() {
+    const now = performance.now();
+    const delta = now - this.latestFrameTimeStamp;
+    this.latestFrameTimeStamp = now;
+    const fps = 1 / delta * 1000;
+
+    this.frames.push(fps);
+    if (this.frames.length > 100) {
+      this.frames.shift();
+    }
+
+    let min = Infinity;
+    let max = -Infinity;
+    let sum = 0;
+
+    for (let i = 0; i < this.frames.length; i++) {
+      sum += this.frames[i];
+      min = Math.min(this.frames[i], min);
+      max = Math.max(this.frames[i], max);
+    }
+
+    let mean = sum / this.frames.length;
+
+    this.fps.textContent = `
+FPS:
+         latest = ${Math.round(fps)}
+avg of last 100 = ${Math.round(mean)}
+min of last 100 = ${Math.round(min)}
+max of last 100 = ${Math.round(max)}
+    `.trim();
+  }
+}
+
 const frameRate = (cb, fps, timestampMark = 0) => {
   const timestampDelta = Math.floor(1000 / fps);
 
@@ -126,6 +159,14 @@ const frameRate = (cb, fps, timestampMark = 0) => {
 
     animationId = requestAnimationFrame(frameRate(cb, fps, newTimestampMark));
   }
+}
+
+const renderLoop = () => {
+  fpsMonitor.render();
+  universe.tick();
+  
+  drawGrid();
+  drawCells();
 }
 
 play();
