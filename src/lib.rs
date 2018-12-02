@@ -153,10 +153,7 @@ impl Universe {
         self.cells = next;
     }
 
-    pub fn new(preset: UniversePreset) -> Universe {
-        let width = 64;
-        let height = 64;
-
+    pub fn new(width: u32, height: u32, preset: UniversePreset) -> Universe {
         let cells = (0..width * height).map(|i| {
             match preset {
                 UniversePreset::Empty => {
