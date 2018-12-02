@@ -40,7 +40,7 @@ wasm-bindgen-test = "0.2"
 # Link Time Optimisations
 lto = true
 # Include debug symbols
-debug = true
+debug = false
 # Tell `rustc` to optimize for speed not size
 opt-level = "s"
 # Tell `rustc` to optimize for small code size at potential speed consts
