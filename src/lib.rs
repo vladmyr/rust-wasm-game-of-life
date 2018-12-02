@@ -32,6 +32,7 @@ pub struct Timer<'a> {
     name: &'a str,
 }
 
+// 'a is a lifetime specifier
 impl <'a> Timer<'a> {
     pub fn new(name: &'a str) -> Timer<'a> {
         console::time_with_label(name);
@@ -120,28 +121,20 @@ impl Universe {
 #[wasm_bindgen]
 impl Universe {
     pub fn tick(&mut self) {
-        let _timer = Timer::new("Universe::tick");
+        // let _timer = Timer::new("Universe::tick");
 
         let mut next = {
-            let _timer = Timer::new("allocate next cells");
+            // let _timer = Timer::new("allocate next cells");
             self.cells.clone()
         };
 
         {
-            let _timer = Timer::new("new generation");
+            // let _timer = Timer::new("new generation");
             for row in 0..self.height {
                 for col in 0..self.width {
                     let idx = self.get_index(row, col);
                     let cell = self.cells[idx];
                     let live_neighbors = self.live_neighbor_count(row, col);
-
-                    // log!(
-                    //     "cell[{}, {}] is initially {:?} and has {} live neighbours",
-                    //     row,
-                    //     col,
-                    //     cell,
-                    //     live_neighbors
-                    // );
 
                     let next_cell = match (cell, live_neighbors) {
                         (Cell::Alive, x) if x < 2 => Cell::Dead,
@@ -151,20 +144,16 @@ impl Universe {
                         (otherwise, _) => otherwise,
                     };
 
-                    // log!("  it becomes {:?}", next_cell);
-
                     next[idx] = next_cell;
                 }
             }
         }
 
-        let _timer = Timer::new("free old cells");
+        // let _timer = Timer::new("free old cells");
         self.cells = next;
     }
 
     pub fn new(preset: UniversePreset) -> Universe {
-        utils::set_panic_hook();
-
         let width = 64;
         let height = 64;
 

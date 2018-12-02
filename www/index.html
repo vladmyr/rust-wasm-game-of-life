@@ -2,31 +2,60 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Hello wasm-pack!</title>
+    <title>Conway's Game of Life</title>
     <style>
       body {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
+        margin: 2px;
+        font-family: sans-serif;
       }
 
-      #fps {
-        white-space: pre;
-        font-family: monospace;
+      /* * {
+        margin: 4px 0 0;
+      } */
+
+      .play-pause {
+        padding: 2px;
+        min-width: 100px;
+        font-size: 1.1em;
+      }
+
+      .canvas {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+      }
+
+      .controls {
+        padding: 10px;
+        text-align: center;
+      }
+
+      .input-group {
+        margin-top: 4px; 
       }
     </style>
   </head>
   <body>
-    <button id="play-pause"></button>
-    <div id="fps"></div>
-    <canvas id="game-of-life-canvas"></canvas>
+    <div class="controls">
+      <div class="input-group">
+        <button class="play-pause" id="id_play_pause">
+          Pause
+        </button>
+      </div>
+      
+      <div class="input-group">
+        FPS cap <input id="id_fps_cap" type="number" class="input" value="60" maxlength="2" size="2" />
+      </div>
+      <div class="input-group">
+        Generations per tick <input id="id_gen_multiplier" type="number" class="input" value="1" maxlength="2" size="2" />
+      </div>
+      <div class="input-group">
+        <span class="fps-monitor__report" id="id_fps_report"></span>
+      </div>
+    </div>
+    <div class="canvas">
+        <canvas id="id_canvas"></canvas>
+    </div>
     <script src="./bootstrap.js"></script>
   </body>
 </html>

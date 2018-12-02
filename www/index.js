@@ -1,7 +1,7 @@
 import { Universe, Cell, UniversePreset } from "rust-wasm-game-of-life";
 import { memory } from "rust-wasm-game-of-life/rust_wasm_game_of_life_bg";
 
-const CELL_SIZE = 12;
+const CELL_SIZE = 10;
 const GRID_COLOR = "#cccccc";
 const DEAD_COLOR = "#ffffff";
 const ALIVE_COLOR = "#000000";
@@ -10,10 +10,38 @@ const universe = Universe.new(UniversePreset.Demo);
 const width = universe.width();
 const height = universe.height();
 
-let animationId = undefined;
-let fps = 2;
+let fps = parseInt(localStorage.getItem("fps")) || 60;
+let genMultiplier = parseInt(localStorage.getItem("genMultiplier")) || 1;
 
-const canvas = document.getElementById("game-of-life-canvas");
+const elFpsCap = document.getElementById("id_fps_cap");
+elFpsCap.setAttribute("value", fps);
+elFpsCap.addEventListener("input", event => {
+  const parsed = parseInt(event.target.value);
+
+  if (!Number.isNaN(parsed) && parsed > 0 && parsed < 61) {
+    fps = parsed;
+    localStorage.setItem("fps", fps);
+  } else {
+    elFpsCap.setAttribute("value", fps);
+  }
+})
+
+const elGenMultiplier = document.getElementById("id_gen_multiplier");
+elGenMultiplier.setAttribute("value", genMultiplier);
+elGenMultiplier.addEventListener("input", event => {
+  const parsed = parseInt(event.target.value);
+
+  if (!Number.isNaN(parsed) && parsed > 0 && parsed < 61) {
+    genMultiplier = parsed;
+    localStorage.setItem("genMultiplier", genMultiplier);
+  } else {
+    elGenMultiplier.setAttribute("value", genMultiplier);
+  }
+})
+
+let animationId = undefined;
+
+const canvas = document.getElementById("id_canvas");
 canvas.height = (CELL_SIZE + 1) * height + 1;
 canvas.width = (CELL_SIZE + 1) * width + 1;
 
@@ -42,17 +70,17 @@ const isPaused = () => {
 }
 
 const play = () => {
-  playPauseButton.textContent = "⏸";
-  animationId = requestAnimationFrame(frameRate(renderLoop, fps));
+  playPauseButton.textContent = "Pause";
+  animationId = requestAnimationFrame(frameRate(renderLoop));
 }
 
 const pause = () => {
-  playPauseButton.textContent = "▶";
+  playPauseButton.textContent = "Play";
   cancelAnimationFrame(animationId);
   animationId = undefined;
 }
 
-const playPauseButton = document.getElementById("play-pause");
+const playPauseButton = document.getElementById("id_play_pause");
 playPauseButton.addEventListener("click", event => {
   if (isPaused()) {
     play();
@@ -108,7 +136,7 @@ const drawCells = () => {
 
 const fpsMonitor = new class {
   constructor() {
-    this.fps = document.getElementById("fps");
+    this.fps = document.getElementById("id_fps_report");
     this.frames = [];
     this.latestFrameTimeStamp = performance.now();
   }
@@ -136,17 +164,14 @@ const fpsMonitor = new class {
 
     let mean = sum / this.frames.length;
 
-    this.fps.textContent = `
-FPS:
-         latest = ${Math.round(fps)}
-avg of last 100 = ${Math.round(mean)}
-min of last 100 = ${Math.round(min)}
-max of last 100 = ${Math.round(max)}
-    `.trim();
+    this.fps.textContent = `FPS: latest = ${Math.round(fps)}, \
+      avg = ${Math.round(mean)}, \
+      min = ${Math.round(min)}, \
+      max = ${Math.round(max)}`;
   }
 }
 
-const frameRate = (cb, fps, timestampMark = 0) => {
+const frameRate = (cb, timestampMark = 0) => {
   const timestampDelta = Math.floor(1000 / fps);
 
   return (timestamp) => {
@@ -157,13 +182,16 @@ const frameRate = (cb, fps, timestampMark = 0) => {
       newTimestampMark = timestamp + timestampDelta;
     }
 
-    animationId = requestAnimationFrame(frameRate(cb, fps, newTimestampMark));
+    animationId = requestAnimationFrame(frameRate(cb, newTimestampMark));
   }
 }
 
 const renderLoop = () => {
   fpsMonitor.render();
-  universe.tick();
+
+  for (let i = 0; i < genMultiplier; i++) {
+    universe.tick();
+  }
   
   drawGrid();
   drawCells();
